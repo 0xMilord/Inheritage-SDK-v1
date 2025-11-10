@@ -1,0 +1,53 @@
+{
+  "name": "@inheritage/sdk",
+  "version": "0.1.0",
+  "description": "Official TypeScript SDK for the Inheritage API Suite (v1).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "clean": "rimraf dist",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "inheritage",
+    "heritage",
+    "api",
+    "sdk",
+    "typescript",
+    "geojson",
+    "ai",
+    "citation"
+  ],
+  "author": "Inheritage Foundation <api@inheritage.foundation>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inheritage-foundation/sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/inheritage-foundation/sdk/issues"
+  },
+  "homepage": "https://inheritage.foundation/docs/api",
+  "devDependencies": {
+    "@tsconfig/node18": "^18.2.2",
+    "rimraf": "^5.0.5",
+    "tsup": "^7.2.0",
+    "typescript": "^5.4.0"
+  }
+}
+
