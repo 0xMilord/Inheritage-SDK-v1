@@ -1,96 +1,68 @@
-# @inheritage/sdk
+# 🏛️ Inheritage SDK (TypeScript)
 
-Official TypeScript SDK for the Inheritage API Suite (`/api/v1`).
+[![npm version](https://img.shields.io/npm/v/%40inheritage%2Fsdk?label=npm&color=blue)](https://www.npmjs.com/package/@inheritage/sdk)
+[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-ff69b4.svg)](https://inheritage.foundation/docs/api)
+[![Discussions](https://img.shields.io/badge/chat-Discussions-blueviolet.svg)](https://github.com/0xMilord/Inheritage-SDK-v1/discussions)
+[![Open Data](https://img.shields.io/badge/data-CC%20BY%204.0-orange.svg)](https://inheritage.foundation/api/v1)
 
-> **Status:** Alpha – the API contract is production ready, the SDK surface may evolve prior to v1.  
-> **License:** Apache 2.0
+**Access India's cultural heritage programmatically.**  
+Query thousands of monuments, temples, and cultural sites—open data, CC BY 4.0, ready for maps, AI, and education.
 
-## Features
+---
 
-- Thin, typed wrapper around the public API (heritage, geo, media, citation, AI, system).
-- Automatic attribution headers and rate-limit metadata.
-- First-class support for `fetch` polyfills (browser, Node 18+, edge runtimes).
-- Helpful error objects with trace IDs and retry hints.
-
-## Installation
+## 🚀 Quickstart
 
 ```bash
 npm install @inheritage/sdk
 # or
-yarn add @inheritage/sdk
+pnpm add @inheritage/sdk
 ```
-
-## Quick start
 
 ```ts
 import { InheritageClient } from "@inheritage/sdk"
 
-const client = new InheritageClient()
+const inheritage = new InheritageClient()
+const { data } = await inheritage.getHeritage("hoysaleswara-temple")
 
-const { data: heritage } = await client.getHeritage("hoysaleswara-temple")
-console.log(heritage.name) // "Hoysaleswara Temple"
+console.log(data.name) // "Hoysaleswara Temple"
 ```
-
-## Configuration
-
-```ts
-const client = new InheritageClient({
-  baseUrl: "https://inheritage.foundation/api/v1",
-  attribution: "visible", // default – required on the public tier
-  userAgent: "my-app/1.0.0",
-  fetch: customFetch, // optional override (e.g. cross-fetch, undici)
-})
-```
-
-### Commercial tier
-
-If you hold a commercial plan that allows suppressed attribution headers:
-
-```ts
-const client = new InheritageClient({
-  attribution: "suppressed",
-  plan: "commercial",
-})
-```
-
-Attempting to use `suppressed` without `plan: "commercial"` throws during construction – fail fast to avoid breaking the contract.
-
-## Error handling
-
-All non-2xx responses raise an `InheritageApiError` containing the platform error envelope, HTTP status, trace ID, rate-limit headers, and an optional retry hint.
-
-```ts
-import { InheritageClient, InheritageApiError } from "@inheritage/sdk"
-
-const client = new InheritageClient()
-
-try {
-  const data = await client.getHeritage("unknown")
-} catch (error) {
-  if (error instanceof InheritageApiError) {
-    console.error(error.code, error.status, error.traceId)
-    if (error.retryAfter) {
-      console.log(`Back off for ${error.retryAfter} seconds.`)
-    }
-  }
-}
-```
-
-## Building locally
-
-```bash
-npm install
-npm run build
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes and open a PR
-
-Please read `/docs/public-api-suite.md` in the main Inheritage repository for the canonical API contract.
 
 ---
 
-© 2025 Inheritage Foundation. Licensed under Apache 2.0.
+## 🧠 What You Can Build
+
+- Visualize heritage sites on maps with `geo/heritage` and `geo/nearby`
+- Compare dynasties, architectural styles, or visitor metadata over time
+- Power AI assistants using deterministic `/ai/context` narratives and embeddings
+- Curate media galleries with watermark guidance from `/media`
+- Track attribution usage via `/citation/report` for community dashboards
+
+---
+
+## 🔗 Useful Links
+
+- [API Reference](https://inheritage.foundation/docs/api)
+- [Dataset Manifest (JSON-LD)](https://inheritage.foundation/api/v1)
+- [OpenAPI 3.1 Specification](https://inheritage.foundation/openapi/v1.yaml)
+- [Playground](https://inheritage.foundation/docs/api#playground)
+- [Issue Tracker](https://github.com/0xMilord/Inheritage-SDK-v1/issues)
+
+---
+
+## 🤝 Contribute
+
+Issues, ideas, and pull requests are welcome!  
+Start with the [`Ideas for Developers`](https://github.com/0xMilord/Inheritage-SDK-v1/issues) thread, showcase what you build, or join the [Discussions](https://github.com/0xMilord/Inheritage-SDK-v1/discussions) board.  
+Check the [`examples/`](./examples) directory for drop-in starters and consider contributing your own demo.
+
+Every integration helps preserve and popularise India’s heritage.
+
+---
+
+## ⚖️ License
+
+- SDK code: [Apache 2.0](./LICENSE)
+- Data responses: CC BY 4.0 — attribution required via `X-Inheritage-Attribution: visible`
+
+© 2025 Inheritage Foundation. All rights reserved.

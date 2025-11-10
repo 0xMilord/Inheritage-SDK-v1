@@ -1,7 +1,7 @@
 {
   "name": "@inheritage/sdk",
   "version": "0.1.0",
-  "description": "Official TypeScript SDK for the Inheritage API Suite (v1).",
+  "description": "TypeScript SDK for the Inheritage API — India's open cultural heritage dataset.",
   "license": "Apache-2.0",
   "type": "module",
   "main": "dist/index.cjs",
@@ -27,20 +27,24 @@
   "keywords": [
     "inheritage",
     "heritage",
+    "open-data",
+    "digital-heritage",
+    "cultural-preservation",
     "api",
     "sdk",
     "typescript",
     "geojson",
     "ai",
-    "citation"
+    "openapi",
+    "cc-by"
   ],
   "author": "Inheritage Foundation <api@inheritage.foundation>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/inheritage-foundation/sdk.git"
+    "url": "https://github.com/0xMilord/Inheritage-SDK-v1.git"
   },
   "bugs": {
-    "url": "https://github.com/inheritage-foundation/sdk/issues"
+    "url": "https://github.com/0xMilord/Inheritage-SDK-v1/issues"
   },
   "homepage": "https://inheritage.foundation/docs/api",
   "devDependencies": {
@@ -48,6 +52,7 @@
     "rimraf": "^5.0.5",
     "tsup": "^7.2.0",
     "typescript": "^5.4.0"
-  }
+  },
+  "funding": "https://inheritage.foundation/donate"
 }
 
