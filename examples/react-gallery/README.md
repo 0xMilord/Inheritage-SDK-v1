@@ -12,7 +12,7 @@ npm install @inheritage/sdk @tanstack/react-query
 
 ```tsx
 import { useQuery } from "@tanstack/react-query"
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 
 const inheritage = new InheritageClient()
 

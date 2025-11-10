@@ -5,11 +5,11 @@ Welcome to the Inheritage Developer Hub. This documentation mirrors the key task
 ## Getting Started
 
 ```bash
-npm install @inheritage/sdk
+npm install @inheritage-foundation/sdk
 ```
 
 ```ts
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 
 const inheritage = new InheritageClient()
 const { data } = await inheritage.listHeritage({ state: "Tamil Nadu", limit: 10 })

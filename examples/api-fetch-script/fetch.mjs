@@ -1,5 +1,5 @@
 import { writeFileSync } from "node:fs"
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 
 const inheritage = new InheritageClient()
 

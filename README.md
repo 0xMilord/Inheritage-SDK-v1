@@ -1,7 +1,7 @@
 # 🏛️ Inheritage SDK (TypeScript)
 
 [![CI](https://github.com/0xMilord/Inheritage-SDK-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/0xMilord/Inheritage-SDK-v1/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/%40inheritage%2Fsdk?label=npm&color=blue)](https://www.npmjs.com/package/@inheritage/sdk)
+[![npm version](https://img.shields.io/npm/v/%40inheritage-foundation%2Fsdk?label=npm&color=blue)](https://www.npmjs.com/package/@inheritage-foundation/sdk)
 [![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-ff69b4.svg)](https://inheritage.foundation/docs/api)
 [![Discussions](https://img.shields.io/badge/chat-Discussions-blueviolet.svg)](https://github.com/0xMilord/Inheritage-SDK-v1/discussions)
@@ -19,13 +19,13 @@ Query thousands of monuments, temples, and cultural sites—open data, CC BY 4.0
 ## 🚀 Quickstart
 
 ```bash
-npm install @inheritage/sdk
+npm install @inheritage-foundation/sdk
 # or
-pnpm add @inheritage/sdk
+pnpm add @inheritage-foundation/sdk
 ```
 
 ```ts
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 
 const inheritage = new InheritageClient()
 const { data } = await inheritage.getHeritage("hoysaleswara-temple")
@@ -52,7 +52,7 @@ The `examples/` directory ships ready-to-run widgets that you can drop into your
 - **React gallery (`examples/react-gallery`)**
   ```tsx
   import { useQuery } from "@tanstack/react-query"
-  import { InheritageClient } from "@inheritage/sdk"
+  import { InheritageClient } from "@inheritage-foundation/sdk"
 
   const inheritage = new InheritageClient()
 
@@ -110,5 +110,21 @@ Every integration helps preserve and popularise India’s heritage.
 
 - SDK code: [Apache 2.0](./LICENSE)
 - Data responses: CC BY 4.0 — attribution required via `X-Inheritage-Attribution: visible`
+
+---
+
+## 🚀 Releases
+
+1. Bump the version in `package.json`.
+2. From the `sdk/` directory run:
+   ```bash
+   npm install
+   npm test
+   npm publish --access public
+   ```
+3. Tag the release: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+4. Draft release notes summarising API coverage changes.
+
+> You need an npm account with publish rights for `@inheritage-foundation`. Create an automation token for CI if you plan to run this from GitHub Actions.
 
 © 2025 Inheritage Foundation. All rights reserved.

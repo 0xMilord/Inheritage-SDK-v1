@@ -12,7 +12,7 @@ node ai-similarity-demo/index.mjs
 ## Code
 
 ```ts
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 
 const inheritage = new InheritageClient()
 

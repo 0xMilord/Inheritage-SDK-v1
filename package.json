@@ -1,5 +1,5 @@
 {
-  "name": "@inheritage/sdk",
+  "name": "@inheritage-foundation/sdk",
   "version": "0.1.0",
   "description": "TypeScript SDK for the Inheritage API — India's open cultural heritage dataset.",
   "license": "Apache-2.0",

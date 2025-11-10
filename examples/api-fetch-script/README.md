@@ -12,7 +12,7 @@ node api-fetch-script/fetch.mjs
 ## Code
 
 ```ts
-import { InheritageClient } from "@inheritage/sdk"
+import { InheritageClient } from "@inheritage-foundation/sdk"
 import { writeFileSync } from "node:fs"
 
 const inheritage = new InheritageClient()
