@@ -1,224 +1,535 @@
-# 🏛️ Inheritage SDK (TypeScript)
+# @inheritage-foundation/sdk
 
-[![CI](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/%40inheritage-foundation%2Fsdk?label=npm&color=blue)](https://www.npmjs.com/package/@inheritage-foundation/sdk)
-[![License](https://img.shields.io/badge/license-Apache%202.0-green.svg)](./LICENSE)
-[![API Docs](https://img.shields.io/badge/docs-API%20Suite-1f6feb.svg)](https://inheritage.foundation/docs/api)
-[![Discussions](https://img.shields.io/badge/chat-Discussions-8a2be2.svg)](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/discussions)
-[![Open Data](https://img.shields.io/badge/data-CC%20BY%204.0-f97316.svg)](https://inheritage.foundation/api/v1)
+[![npm version](https://img.shields.io/npm/v/@inheritage-foundation/sdk.svg)](https://www.npmjs.com/package/@inheritage-foundation/sdk)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![CI](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/actions/workflows/ci.yml/badge.svg)](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/actions)
 
-![Inheritage SDK social preview](./inheritage-sdk.jpg)
+Official TypeScript SDK for the [Inheritage Foundation](https://inheritage.foundation) public API. Access India's documented heritage programmatically—temples, monuments, cultural sites—with zero gatekeeping, full attribution, and production-grade ergonomics.
 
-Welcome to the TypeScript SDK for the **Inheritage API Suite v1.0**, the open cultural dataset. This package exposes typed clients for every public endpoint—heritage catalogue, geospatial features, media bundles, citation tooling, AI-ready context, and the dataset manifest—while respecting the production contract: headers, rate limits, caching, and the unified error envelope.
+**License:** Apache 2.0 (SDK code) | Data under CC BY 4.0  
+**Data Attribution:** Required per CC BY 4.0 — see [AI Usage Policy](https://inheritage.foundation/license/ai)
 
 ---
 
-## Table of Contents
+## Features
 
-1. [Getting Started](#getting-started)
-2. [Authentication & Headers](#authentication--headers)
-3. [API Coverage](#api-coverage)
-   - [Heritage API](#heritage-api)
-   - [Geospatial API](#geospatial-api)
-   - [Media API](#media-api)
-   - [Citation & Attribution API](#citation--attribution-api)
-   - [AI Context & Embedding API](#ai-context--embedding-api)
-   - [Dataset Manifest & Stats](#dataset-manifest--stats)
-4. [Examples & Widgets](#examples--widgets)
-5. [Errors, Rate Limits & Caching](#errors-rate-limits--caching)
-6. [Support & Community](#support--community)
-7. [License](#license)
+- 🏛️ **5000+ Heritage Sites**: Temples, forts, monuments across India
+- 🗺️ **GeoJSON Support**: EPSG:4326, bbox queries, native geospatial APIs
+- 🤖 **AI-Ready**: 1536-d embeddings, semantic search, LangChain/LangGraph adapters
+- ⚛️ **React Hooks**: `useHeritage`, `useAIContext`, `useSimilarSites` with auto-caching
+- 🎨 **Attribution Component**: `<InheritageCitation />` for CC BY 4.0 compliance
+- 📦 **Tree-shakeable**: ESM/CJS dual build, zero runtime dependencies (except React for hooks)
+- 🔒 **Type-Safe**: Full TypeScript definitions generated from OpenAPI spec
+- ⚡ **Smart Caching**: ETag, If-None-Match, stale-while-revalidate support
+- 🚦 **Rate Limit Aware**: Automatic retry headers, exponential backoff utilities
+- 🌐 **Multi-Format**: JSON, GeoJSON, NDJSON vector feeds
 
 ---
 
-## Getting Started
+## Installation
 
 ```bash
 npm install @inheritage-foundation/sdk
 # or
+yarn add @inheritage-foundation/sdk
+# or
 pnpm add @inheritage-foundation/sdk
 ```
 
-```ts
-import { InheritageClient } from "@inheritage-foundation/sdk"
-
-const client = new InheritageClient()
-const { data } = await client.getHeritage("hoysaleswara-temple")
-
-console.log(data.name)                     // "Hoysaleswara Temple"
-console.log(data.media.primary_image)      // Primary photo URL
-```
-
-The client targets `https://inheritage.foundation/api/v1` by default. Override it when self-hosting mirrors:
-
-```ts
-const client = new InheritageClient({ baseUrl: "https://staging.inheritage.foundation/api/v1" })
-```
-
-Each request automatically injects the required attribution headers; you can pass `signal`, `headers`, `ifNoneMatch`, and `ifModifiedSince` through the options argument on every method.
-
 ---
 
-## Authentication & Headers
+## Quick Start
 
-- **No API key required** for the public tier. Every call must include `X-Inheritage-Attribution: visible`. The SDK sets this header by default.
-- **Commercial tier** users add `X-Inheritage-Plan: commercial`. You can configure this via:
+### Basic Usage
 
-  ```ts
-  const client = new InheritageClient({ defaultHeaders: { "X-Inheritage-Plan": "commercial" } })
-  ```
+```typescript
+import { InheritageClient } from '@inheritage-foundation/sdk'
 
-- **Attribution enforcement**: suppressing credit without the commercial plan yields `403 FORBIDDEN` with hint “Send X-Inheritage-Attribution: visible or upgrade to a commercial plan.”
-- **CORS**: the public API allows browser calls; the SDK works in Node, edge runtimes, and the browser (with `fetch` polyfills if necessary).
+const client = new InheritageClient({
+  baseUrl: 'https://inheritage.foundation/api/v1', // optional, this is default
+  attribution: 'visible', // required for CC BY 4.0 compliance
+})
+
+// Fetch a heritage site
+const site = await client.getHeritage('hoysaleswara-temple')
+console.log(site.data.name) // "Hoysaleswara Temple"
+console.log(site.data.state) // "Karnataka"
+
+// List heritage sites with filters
+const sites = await client.listHeritage({
+  state: 'Karnataka',
+  category: 'Temple',
+  limit: 10,
+  offset: 0,
+})
+console.log(sites.data.data.length) // 10
+console.log(sites.data.meta.total) // 450
+
+// Nearby search (GeoJSON)
+const nearby = await client.getGeoNearby({
+  lat: 28.6139,
+  lon: 77.2090,
+  radius: 10, // km
+  limit: 5,
+})
+console.log(nearby.data.type) // "FeatureCollection"
+console.log(nearby.data.features[0].properties.name) // "Qutb Minar"
+```
+
+### React Hooks
+
+```tsx
+import { useHeritage, useAIContext, InheritageCitation } from '@inheritage-foundation/sdk'
+
+function HeritagePage({ slug }: { slug: string }) {
+  const { data, loading, error } = useHeritage(slug)
+  const { data: aiContext } = useAIContext(slug)
+
+  if (loading) return <div>Loading...</div>
+  if (error) return <div>Error: {error.message}</div>
+  if (!data) return <div>Not found</div>
+
+  return (
+    <div>
+      <h1>{data.name}</h1>
+      <p>{data.description}</p>
+      
+      {aiContext && (
+        <div>
+          <h2>AI Context</h2>
+          <p>{aiContext.context}</p>
+          <small>Embedding dimensions: {aiContext.embedding_dimensions}</small>
+        </div>
+      )}
+      
+      <InheritageCitation citation={data.citations} display="block" showBadge />
+    </div>
+  )
+}
+```
+
+### AI & Semantic Search
+
+```typescript
+// Get AI context and embeddings
+const context = await client.getAIContext('taj-mahal')
+console.log(context.data.context) // "The Taj Mahal is a 17th-century mausoleum..."
+console.log(context.data.embedding.length) // 1536
+console.log(context.data.embedding_checksum) // "a1b2c3d4..."
+
+// Find similar sites
+const similar = await client.findSimilar({
+  slug: 'taj-mahal',
+  limit: 5,
+})
+similar.data.data.forEach(entry => {
+  console.log(`${entry.score.toFixed(3)} - ${entry.site.name}`)
+})
+// Output:
+// 0.987 - Humayun's Tomb
+// 0.954 - Red Fort
+// 0.932 - Agra Fort
+
+// Get AI metadata bundle
+const metadata = await client.getAIMetadata('taj-mahal')
+console.log(metadata.data.model) // "inheritage-d1"
+console.log(metadata.data.model_version) // "2025-01-15"
+console.log(metadata.data.license_url) // "https://inheritage.foundation/license/ai"
+
+// Stream vector index for database sync
+const vectors = await client.getAIVectorIndex({ limit: 100, offset: 0 })
+vectors.data.forEach(record => {
+  console.log(record.slug, record.vector.length, record.embedding_checksum)
+})
+```
+
+### LangChain Integration
+
+```typescript
+import { InheritageClient, createHeritageContextRunnable, createInheritageToolkit } from '@inheritage-foundation/sdk/langchain'
+import { ChatOpenAI } from '@langchain/openai'
+
+const client = new InheritageClient({ attribution: 'visible' })
+
+// Create a runnable for AI context retrieval
+const heritageContextChain = createHeritageContextRunnable({ 
+  client,
+  includeHeaders: false, // set true to include API metadata
+})
+
+const result = await heritageContextChain.invoke({ slug: 'khajuraho' })
+console.log(result.context)
+console.log(result.embedding_dimensions) // 1536
+
+// Create tools for LangChain agents
+const tools = createInheritageToolkit(client)
+const llm = new ChatOpenAI({ modelName: 'gpt-4-turbo' })
+
+// Agent can now use:
+// - get_heritage_ai_context
+// - find_similar_heritage_sites
+// - get_heritage_ai_metadata
+// - get_heritage_ai_license
+```
 
 ---
 
 ## API Coverage
 
-The SDK exposes typed methods mapped 1:1 to the public routes documented in [`public-api-suite.md`](../docs/public-api-suite.md). Every response preserves the structure defined there—fields, nested objects, citations, and metadata.
-
 ### Heritage API
 
-- **Endpoints**: `GET /heritage`, `/heritage/:slug`, `/heritage/search`, `/heritage/random`
-- **Filters & parameters**:
-  - `state`, `dynasty`, `style`, `material`, `period`, `country`
-  - `limit` (1–100), `offset`
-  - `sort` whitelist (`name`, `period`, `state`, `completion_score`, `view_count`, `country`) with optional `-` prefix for descending
-  - `fields=id,name,state` style projections
-- **Example**:
+**Endpoints**: `GET /heritage/:slug`, `GET /heritage`, `GET /heritage/featured`, `GET /heritage/top`
 
-  ```ts
-  const { data } = await client.listHeritage({
-    state: "Karnataka",
-    sort: "-completion_score",
-    limit: 5,
-    fields: ["id", "name", "status", "media"]
-  })
+Fetch detailed information about cultural heritage sites including:
+- Name, description, historical context
+- Location (state, coordinates, geolocation)
+- Architecture (style, materials, construction)
+- Visitor information (hours, fees, facilities)
+- Media (images, videos, 360° panoramas, floor plans)
+- Timeline events, references, analytics
 
-  data.data.forEach(site => {
-    console.log(site.name, site.status?.completion_score, site.media?.primary_image)
-  })
-  ```
+**Example**:
 
-- **Search**: `client.searchHeritage({ q: "temple", state: "Tamil Nadu", limit: 15 })`
-- **Random**: `client.getRandomHeritage()` returns a CC BY 4.0 compliant record ready for attribution.
+```typescript
+const site = await client.getHeritage('ram-mandir-ayodhya')
+console.log(site.data.architecture.style) // "Nagara Style"
+console.log(site.data.visitor_info.entry_fee) // "Free"
+console.log(site.data.media.primary_image) // "https://cdn.inheritage.foundation/..."
+```
 
 ### Geospatial API
 
-- **Endpoints**: `GET /geo/heritage`, `/geo/heritage/:slug`, `/geo/nearby`
-- **Features**:
-  - Returns GeoJSON FeatureCollections with `properties.citation`
-  - Optional `Accept: application/geo+json` to receive GeoJSON MIME type
-  - `GET /geo/nearby` accepts `lat`, `lon`, `radius_km ≤ 250`
-- **Example**:
+**Endpoints**: `GET /geo/nearby`, `GET /geo/region`, `GET /geo/:slug`
 
-  ```ts
-  const { data } = await client.getGeoNearby({ lat: 12.97, lon: 77.59, radius_km: 50 })
-  console.log(data.features.map(feature => feature.properties?.name))
-  ```
+GeoJSON-first geospatial queries:
+- Nearby search by lat/lon with radius
+- Region/bounding box queries
+- Single-site GeoJSON feature
+- EPSG:4326 coordinates, `Accept: application/geo+json` header support
+
+**Example**:
+
+```typescript
+const nearby = await client.getGeoNearby({
+  lat: 19.0760,
+  lon: 72.8777,
+  radius: 5, // km
+  limit: 10,
+})
+nearby.data.features.forEach(feature => {
+  console.log(feature.properties.name, feature.geometry.coordinates)
+})
+```
 
 ### Media API
 
-- **Endpoints**: `GET /media/:slug`, `/media/search`, `/media/random`
-- **Highlights**:
-  - Bundles imagery, tours, CAD, point clouds, videos
-  - Responses emit `X-Inheritage-Watermark` (`required` or `not-required`)
-  - `Content-Disposition` header suggests export-friendly filenames
-- **Example**:
+**Endpoints**: `GET /media/:slug`
 
-  ```ts
-  const response = await client.getMedia("taj-mahal-agra")
-  console.log(response.headers.get("X-Inheritage-Watermark")) // required | not-required
-  console.log(response.data.items.map(item => `${item.type}: ${item.url}`))
-  ```
+Fetch media bundles including:
+- Primary images, galleries, panoramas
+- 360° virtual tours, floor plans, site plans
+- Point clouds, mesh data, CAD files
+- Videos, documents
 
-### Citation & Attribution API
+**Example**:
 
-- **Endpoints**: `GET /citation/:entityId`, `POST /citation/report`
-- **Use cases**:
-  - Fetch canonical credit snippets (HTML, Markdown, plain text) alongside `source_url`
-  - Report display counts for dashboards (`entity`, `app_name`, `domain`, `display_count`)
-- **Example**:
+```typescript
+const media = await client.getMedia('hoysaleswara-temple')
+console.log(media.data.primary_image) // "https://cdn.inheritage.foundation/..."
+console.log(media.data.gallery.length) // 24
+console.log(media.data.panoramas[0].url) // "https://cdn.inheritage.foundation/..."
+```
 
-  ```ts
-  const { data } = await client.getCitation("hoysaleswara-temple")
-  console.log(data.citation_html)
-  ```
+### Citation API
 
-### AI Context & Embedding API
+**Endpoints**: `GET /citation/:entityId`
 
-- **Endpoints**: `GET /ai/context/:slug`, `/ai/embedding/:slug`, `POST /ai/similar`
-- **Features**:
-  - Deterministic narratives plus 1536-d embeddings (`X-Embedding-Model: inheritage-d1`)
-  - Similarity endpoint accepts either `slug` or a custom `embedding` array, returns cosine-ranked matches filtered to published sites
-- **Example**:
+Retrieve attribution metadata for any entity:
 
-  ```ts
-  const { data } = await client.findSimilar({ slug: "ajanta-caves-maharashtra", limit: 5 })
-  console.table(data.data.map(entry => ({
-    score: entry.score.toFixed(3),
-    slug: entry.site.slug,
-    state: entry.site.state
-  })))
-  ```
+```typescript
+const citation = await client.getCitation('taj-mahal')
+console.log(citation.data.required_display) // "Data © Inheritage Foundation"
+console.log(citation.data.license) // "CC BY 4.0"
+```
 
-### Dataset Manifest & Stats
+### AI Context, Metadata & Federation
 
-- **Endpoints**: `GET /api/v1`, `GET /api/v1/stats`
-- **Manifest**: JSON-LD dataset entry point containing `distribution`, `keywords`, `variableMeasured`, `spatialCoverage`, etc. Used by Google Dataset Search, Bing, Perplexity, and other portals.
-- **Stats**: Aggregated counts (total, published, featured, views, average completion) plus breakdowns by status, category, state, and country.
-- **Example**:
+**Endpoints**: `GET /ai/context/:slug`, `/ai/embedding/:slug`, `POST /ai/similar`, `GET /ai/meta/:slug`, `POST /ai/vision/context`, `GET /ai/vector-index.ndjson`, `GET /license/ai`
 
-  ```ts
-  const { data } = await client.getStats()
-  console.log(data.counts.published, data.breakdown.by_state.Karnataka)
-  ```
+**Features**:
+- Deterministic narratives + 1536-d embeddings with checksum + model version headers
+- Similarity endpoint accepts either `slug` or a custom `embedding` array, returning cosine-ranked matches with reference metadata
+- Metadata endpoint mirrors the production schema (`embedding_checksum`, `sources`, `same_as`) for LangChain/LangGraph ingestion
+- Vision ingress classifies an image (URL/Base64) into probable heritage sites with captions + style predictions
+- Vector feed emits NDJSON slices for Pinecone/Weaviate/Chroma syncing; use `getAIVectorIndex` with `limit/offset` pagination
+- AI license endpoint provides the JSON addendum required for policy auditors and automated agents
 
-For endpoint-by-endpoint response structures, refer to [`docs/public-api-suite.md`](../docs/public-api-suite.md) or the live OpenAPI schema: `https://inheritage.foundation/openapi/v1.yaml`.
+**Example**:
 
----
+```typescript
+// AI Context
+const context = await client.getAIContext('ajanta-caves-maharashtra')
+console.log(context.data.context) // "The Ajanta Caves are a UNESCO World Heritage Site..."
+console.log(context.data.embedding_checksum) // SHA-256 checksum for reproducibility
 
-## Examples & Widgets
+// Similar Sites
+const similar = await client.findSimilar({ slug: 'ajanta-caves-maharashtra', limit: 5 })
+console.table(similar.data.data.map(entry => ({
+  score: entry.score.toFixed(3),
+  slug: entry.site.slug,
+  state: entry.site.state
+})))
 
-| Folder | What it showcases |
-| --- | --- |
-| [`examples/react-gallery`](./examples/react-gallery/) | React media carousel using `getMedia` plus watermark handling. |
-| [`examples/nextjs-map`](./examples/nextjs-map/) | MapLibre map plotting 200 heritage features with `listGeoHeritage`. |
-| [`examples/ai-similarity-demo`](./examples/ai-similarity-demo/) | CLI similarity tool calling `POST /ai/similar`. |
-| [`examples/api-fetch-script`](./examples/api-fetch-script/) | Node script exporting the full catalogue using pagination helpers. |
+// AI Metadata
+const metadata = await client.getAIMetadata('ajanta-caves-maharashtra')
+console.log(metadata.data.embedding_checksum) // Stable SHA-256 checksum
+console.log(metadata.data.license_url) // "https://inheritage.foundation/license/ai"
 
-Additional resources:
+// Vector Index Feed
+const vectorFeed = await client.getAIVectorIndex({ limit: 100 })
+vectorFeed.data.forEach(record => {
+  console.log(record.slug, record.embedding_checksum)
+})
 
-- **Interactive Playground**: [`/docs/api#playground`](https://inheritage.foundation/docs/api#playground) for live requests (cURL snippets and headers included).
-- **Dataset Manifest**: [`GET /api/v1`](https://inheritage.foundation/api/v1) for discovery metadata.
-- **Stats Endpoint**: [`GET /api/v1/stats`](https://inheritage.foundation/api/v1/stats) for dashboards and reporting.
+// Vision Context
+const vision = await client.getAIVisionContext({ 
+  image_url: 'https://cdn.inheritage.foundation/hoysaleswara/front.jpg' 
+})
+console.log(vision.data.caption) // "A detailed view of the Hoysaleswara Temple facade."
+console.log(vision.data.architectural_style_prediction) // "Hoysala"
 
----
-
-## Errors, Rate Limits & Caching
-
-- **Error handling**: the SDK throws `InheritageApiError` with `status`, `code`, `message`, `hint`, `doc`, `traceId`, optional `retryAfter`, and `rateLimit` info.
-- **Rate limits**: 120 req/min/IP (default), 60 req/min/IP for Geospatial routes. Headers advertise quotas and reset timestamps; implement exponential backoff when receiving `429 RATE_LIMITED`.
-- **Caching**: every response emits `Cache-Control`, `ETag`, `Last-Modified`, and `stale-while-revalidate`. You can pass `ifNoneMatch` and `ifModifiedSince` when reusing responses to leverage 304 Not Modified.
+// AI License
+const license = await client.getAILicense()
+console.log(license.data.requirements.ai_headers['AI-Use-Allowed']) // "true"
+```
 
 ---
 
-## Support & Community
+## React Hooks Reference
 
-- Documentation: [https://inheritage.foundation/docs/api](https://inheritage.foundation/docs/api)
-- Issues & feature requests: [GitHub tracker](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/issues)
-- Discussions, project ideas, showcases: [GitHub Discussions](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/discussions)
-- Email: [api@inheritage.foundation](mailto:api@inheritage.foundation)
+### `useHeritage(slug, options?)`
 
-We welcome PRs for bug fixes, new helpers, and additional examples. Please include tests where appropriate and ensure endpoints remain faithful to the production contract.
+Fetch a single heritage site with automatic loading/error states.
+
+```tsx
+const { data, loading, error, refetch } = useHeritage('taj-mahal', {
+  client: customClient, // optional
+  enabled: true, // optional, default true
+})
+```
+
+### `useHeritageList(params?, options?)`
+
+Fetch paginated heritage sites with filters.
+
+```tsx
+const { data, loading, error, refetch } = useHeritageList({
+  state: 'Karnataka',
+  category: 'Temple',
+  limit: 20,
+}, { enabled: true })
+```
+
+### `useGeoNearby(params, options?)`
+
+Fetch nearby heritage sites as GeoJSON.
+
+```tsx
+const { data, loading, error, refetch } = useGeoNearby({
+  lat: 28.6139,
+  lon: 77.2090,
+  radius: 10,
+})
+```
+
+### `useAIContext(slug, options?)`
+
+Fetch AI context and embeddings.
+
+```tsx
+const { data, loading, error, refetch } = useAIContext('khajuraho')
+```
+
+### `useSimilarSites(params, options?)`
+
+Find semantically similar sites.
+
+```tsx
+const { data, loading, error, refetch } = useSimilarSites({
+  slug: 'taj-mahal',
+  limit: 5,
+})
+```
+
+### `useAIVectorIndex(params?, options?)`
+
+Paginate through the vector index with infinite scroll support.
+
+```tsx
+const { data, loading, error, hasMore, loadMore } = useAIVectorIndex({
+  limit: 100,
+})
+
+// Call loadMore() to fetch next page
+```
 
 ---
 
-## License
+## Components Reference
 
-- SDK source: [Apache 2.0](./LICENSE)
-- API responses: CC BY 4.0 — visible attribution required via `X-Inheritage-Attribution: visible`
+### `<InheritageCitation />`
 
-Every integration, map, article, or AI assistant built with this SDK helps document and protect India’s cultural heritage. We’d love to see what you create—share your work in Discussions once it’s live.
+Renders CC BY 4.0 attribution for Inheritage data.
 
-© 2025 Inheritage Foundation. All rights reserved.
+**Props**:
+- `citation` (CitationEntry): Citation data from API response
+- `display` ('inline' | 'block'): Display mode (default: 'inline')
+- `className` (string): Custom CSS class
+- `style` (CSSProperties): Custom inline styles
+- `showBadge` (boolean): Show CC BY 4.0 badge (default: false)
+- `showLegal` (boolean): Show full legal text (default: false)
+
+**Examples**:
+
+```tsx
+// Inline (compact)
+<InheritageCitation citation={response.citations} />
+
+// Block with badge
+<InheritageCitation 
+  citation={response.citations} 
+  display="block" 
+  showBadge 
+/>
+
+// Full legal notice
+<InheritageCitation 
+  citation={response.citations} 
+  display="block" 
+  showBadge 
+  showLegal 
+/>
+```
+
+---
+
+## Advanced Features
+
+### Caching & Conditional Requests
+
+```typescript
+// Use ETag for conditional requests
+const response1 = await client.getHeritage('taj-mahal')
+const etag = response1.headers?.get('ETag')
+
+const response2 = await client.getHeritage('taj-mahal', { ifNoneMatch: etag })
+if (response2.notModified) {
+  console.log('Use cached data')
+} else {
+  console.log('Fresh data:', response2.data)
+}
+
+// If-Modified-Since
+const lastModified = response1.headers?.get('Last-Modified')
+const response3 = await client.getHeritage('taj-mahal', { ifModifiedSince: lastModified })
+```
+
+### Rate Limit Handling
+
+```typescript
+const response = await client.getHeritage('taj-mahal')
+if (response.rateLimit) {
+  console.log(`${response.rateLimit.remaining}/${response.rateLimit.limit} requests remaining`)
+  console.log(`Resets at: ${new Date(response.rateLimit.reset * 1000)}`)
+}
+
+// Handle 429 errors
+try {
+  await client.listHeritage({ limit: 1000 })
+} catch (error) {
+  if (error.statusCode === 429) {
+    const retryAfter = error.retryAfter // seconds
+    console.log(`Retry after ${retryAfter} seconds`)
+  }
+}
+```
+
+### Abort Requests
+
+```typescript
+const controller = new AbortController()
+const promise = client.getHeritage('taj-mahal', { signal: controller.signal })
+
+// Cancel after 5 seconds
+setTimeout(() => controller.abort(), 5000)
+
+try {
+  await promise
+} catch (error) {
+  if (error.name === 'AbortError') {
+    console.log('Request cancelled')
+  }
+}
+```
+
+---
+
+## Testing
+
+The SDK includes comprehensive test coverage:
+
+```bash
+# Run all tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Unit tests only
+npm test -- --grep "unit"
+
+# Integration tests only
+npm test -- --grep "integration"
+
+# E2E tests only
+npm test -- --grep "e2e"
+```
+
+---
+
+## Contributing
+
+We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+---
+
+## License & Attribution
+
+- **SDK Code**: Apache 2.0
+- **API Data**: CC BY 4.0 (requires attribution: "Data © Inheritage Foundation")
+- **AI Usage**: See [AI Usage Policy](https://inheritage.foundation/license/ai)
+
+When using this SDK, you **must** provide visible attribution per CC BY 4.0. The SDK automatically includes required headers. For web applications, use the `<InheritageCitation />` component.
+
+---
+
+## Resources
+
+- **Documentation**: [https://inheritage.foundation/docs](https://inheritage.foundation/docs)
+- **API Playground**: [https://inheritage.foundation/docs/playground](https://inheritage.foundation/docs/playground)
+- **OpenAPI Spec**: [https://inheritage.foundation/openapi/v1.yaml](https://inheritage.foundation/openapi/v1.yaml)
+- **LangChain Guide**: [https://inheritage.foundation/docs/langchain](https://inheritage.foundation/docs/langchain)
+- **GitHub**: [https://github.com/Inheritage-Foundation/Inheritage-SDK-v1](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1)
+- **Issues**: [https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/issues](https://github.com/Inheritage-Foundation/Inheritage-SDK-v1/issues)
+
+---
+
+## Support
+
+- **Email**: [hello@inheritage.foundation](mailto:hello@inheritage.foundation)
+- **Discord**: [Join our community](https://discord.gg/inheritage)
+- **Funding**: [Support our mission](https://inheritage.foundation/donate)
+
+---
+
+**Built with ❤️ by [Inheritage Foundation](https://inheritage.foundation)** | Preserving India's cultural heritage through open data

@@ -257,10 +257,24 @@ export interface CitationReportResponse {
   message: string
 }
 
+export interface AISource {
+  type: string
+  slug: string
+  confidence: number
+  retrieval_method: string
+}
+
 export interface AIContextResponse {
   slug: string
   context: string
   embedding: number[]
+  embedding_dimensions: number
+  embedding_checksum: string
+  model: string
+  model_version: string
+  prompt_template_version: string
+  retrieval_policy: string
+  sources: AISource[]
   citation: string
 }
 
@@ -268,6 +282,12 @@ export interface AIEmbeddingResponse {
   slug: string
   dimensions: number
   embedding: number[]
+  embedding_checksum: string
+  model: string
+  model_version: string
+  prompt_template_version: string
+  retrieval_policy: string
+  sources: AISource[]
 }
 
 export interface AISimilarResult {
@@ -281,7 +301,114 @@ export interface AISimilarResponse {
     reference: string | null
     limit: number
     embedding_model: string
+    model_version: string
+    prompt_template_version: string
   }
+}
+
+export interface AIMetadataLicense {
+  name: string
+  citation_required: boolean
+  ai_use_allowed: boolean
+  ai_license_terms: string
+}
+
+export interface AIMetadataResponse {
+  slug: string
+  name: string
+  locale: string | null
+  license: AIMetadataLicense
+  model: string
+  model_version: string
+  prompt_template_version: string
+  retrieval_policy: string
+  embedding_dimensions: number
+  embedding_checksum: string
+  embeddings_last_updated: string | null
+  context: string
+  citations: CitationBlock
+  same_as: string[]
+  sources: AISource[]
+  safety_annotations: string[]
+}
+
+export interface AIVisionRequest {
+  image_url?: string
+  image_base64?: string
+  hint?: string
+  limit?: number
+}
+
+export interface AIVisionMatch {
+  score: number
+  slug: string
+  name: string
+  state: string | null
+  country: string | null
+  architecture_style: string | null
+  site: Heritage
+}
+
+export interface AIVisionResponse {
+  matches: AIVisionMatch[]
+  caption: string | null
+  architecture_style_prediction: string | null
+  embedding_model: string
+  embedding_model_version: string
+  prompt_template_version: string
+  retrieval_policy: string
+  embedding_dimensions: number
+  embedding_checksum: string
+  license: string
+  sources: AISource[]
+  safety_annotations: string[]
+  trace_id: string
+}
+
+export interface AIVectorRecord {
+  slug: string
+  id: string
+  name: string
+  text: string | null
+  vector: number[]
+  embedding_checksum: string
+  embedding_dimensions: number
+  model: string
+  model_version: string
+  prompt_template_version: string
+  retrieval_policy: string
+  license: string
+  license_url: string
+  updated_at: string | null
+}
+
+export interface AIVectorIndexParams {
+  limit?: number
+  offset?: number
+}
+
+export interface AILicenseResponse {
+  name: string
+  version: string
+  license: string
+  human_summary: string
+  url: string
+  requirements: {
+    attribution_header: string
+    license_header: string
+    ai_headers: Record<string, string>
+    citation_snippets_endpoint: string
+  }
+  obligations: string[]
+  allowances: string[]
+  prohibitions: string[]
+  enforcement: {
+    violation_reporting: string
+    revocation_policy: string
+    contact: string
+  }
+  citation_examples: CitationBlock
+  trace_id: string
 }
 
 export interface DatasetManifestLink {

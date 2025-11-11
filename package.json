@@ -1,6 +1,6 @@
 {
   "name": "@inheritage-foundation/sdk",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "TypeScript SDK for the Inheritage API — India's open cultural heritage dataset.",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,6 +12,21 @@
       "import": "./dist/index.mjs",
       "require": "./dist/index.cjs",
       "types": "./dist/index.d.ts"
+    },
+    "./langchain": {
+      "import": "./dist/langchain.mjs",
+      "require": "./dist/langchain.cjs",
+      "types": "./dist/langchain.d.ts"
+    },
+    "./hooks": {
+      "import": "./dist/hooks.mjs",
+      "require": "./dist/hooks.cjs",
+      "types": "./dist/hooks.d.ts"
+    },
+    "./components": {
+      "import": "./dist/components/InheritageCitation.mjs",
+      "require": "./dist/components/InheritageCitation.cjs",
+      "types": "./dist/components/InheritageCitation.d.ts"
     }
   },
   "files": [
@@ -19,7 +34,7 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "build": "tsup src/index.ts --dts --format esm,cjs",
+    "build": "tsup src/index.ts src/langchain.ts src/hooks.ts src/components/InheritageCitation.tsx --dts --format esm,cjs",
     "clean": "rimraf dist",
     "lint": "tsc --noEmit",
     "test": "vitest run",
@@ -49,9 +64,22 @@
     "url": "https://github.com/0xMilord/Inheritage-SDK-v1/issues"
   },
   "homepage": "https://inheritage.foundation/docs/api",
+  "dependencies": {
+    "langchain": "^0.2.11",
+    "langsmith": "^0.1.30"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@tsconfig/node18": "^18.2.2",
     "@types/node": "^20.11.20",
+    "@types/react": "^18.2.0",
     "rimraf": "^5.0.5",
     "tsup": "^7.2.0",
     "typescript": "^5.4.0",
@@ -59,3 +87,4 @@
   },
   "funding": "https://inheritage.foundation/donate"
 }
+

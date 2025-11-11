@@ -23,6 +23,30 @@ console.log(data.map((site) => site.name))
 - Dataset Manifest — <https://inheritage.foundation/api/v1>
 - OpenAPI 3.1 Spec — <https://inheritage.foundation/openapi/v1.yaml>
 - Playground — <https://inheritage.foundation/docs/api#playground>
+- AI Roadmap — [`ai-api-enhancement.md`](./ai-api-enhancement.md)
+
+## LangChain & LangGraph Helpers
+
+```ts
+import { InheritageClient } from "@inheritage-foundation/sdk"
+import { createInheritageToolkit } from "@inheritage-foundation/sdk/langchain"
+
+const client = new InheritageClient()
+const tools = createInheritageToolkit({ client })
+
+const context = await tools[0].runnable.invoke({ slug: "hoysaleswara-temple" })
+console.log(context.data.context)
+```
+
+The LangChain helpers expose runnables for:
+
+- Deterministic context + embeddings (`inheritage_context`)
+- Embedding-only lookups (`inheritage_embedding`)
+- Similarity search (`inheritage_similarity`)
+- AI metadata bundles (`inheritage_metadata`)
+- NDJSON vector feeds for external stores (`inheritage_vector_feed`)
+- Vision ingress (image → heritage context) (`inheritage_vision`)
+- AI license metadata (`inheritage_license`)
 
 ## About
 

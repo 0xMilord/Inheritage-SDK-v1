@@ -2,8 +2,14 @@ import { InheritageApiError } from "./errors"
 import {
   type AIContextResponse,
   type AIEmbeddingResponse,
+  type AIMetadataResponse,
   type AISimilarParams,
   type AISimilarResponse,
+  type AIVectorIndexParams,
+  type AIVectorRecord,
+  type AIVisionRequest,
+  type AIVisionResponse,
+  type AILicenseResponse,
   type ApiRequestOptions,
   type ApiResponse,
   type CitationReportRequest,
@@ -104,6 +110,22 @@ function serializeQuery(params?: Record<string, string | number | boolean | null
     search.set(key, String(value))
   })
   return search
+}
+
+function parseNdjsonRecords(input: string | null | undefined): AIVectorRecord[] {
+  if (!input) return []
+  const lines = input.split(/\r?\n/).map((line) => line.trim())
+  const records: AIVectorRecord[] = []
+  for (const line of lines) {
+    if (!line) continue
+    try {
+      const parsed = JSON.parse(line) as AIVectorRecord
+      records.push(parsed)
+    } catch (error) {
+      throw new Error(`Failed to parse NDJSON vector record: ${(error as Error).message}`)
+    }
+  }
+  return records
 }
 
 export class InheritageClient {
@@ -476,6 +498,95 @@ export class InheritageClient {
       method: "POST",
       path: "/ai/similar",
       body,
+      signal: options.signal,
+    })
+  }
+
+  /**
+   * Machine-readable AI metadata bundle for a heritage site.
+   */
+  async getAIMetadata(slug: string, options: ApiRequestOptions = {}): Promise<ApiResponse<AIMetadataResponse>> {
+    if (!slug || typeof slug !== "string") {
+      throw new Error("slug is required")
+    }
+
+    return this.send<AIMetadataResponse>({
+      method: "GET",
+      path: `/ai/meta/${encodeURIComponent(slug)}`,
+      ifNoneMatch: options.ifNoneMatch,
+      ifModifiedSince: options.ifModifiedSince,
+      headers: options.headers,
+      signal: options.signal,
+    })
+  }
+
+  /**
+   * Vision ingress endpoint: classify an image to heritage metadata.
+   */
+  async getAIVisionContext(body: AIVisionRequest, options: ApiRequestOptions = {}): Promise<ApiResponse<AIVisionResponse>> {
+    if (!body || (typeof body.image_url !== "string" && typeof body.image_base64 !== "string")) {
+      throw new Error("Provide either image_url or image_base64 in the request body")
+    }
+
+    return this.send<AIVisionResponse>({
+      method: "POST",
+      path: "/ai/vision/context",
+      body,
+      headers: options.headers,
+      signal: options.signal,
+    })
+  }
+
+  /**
+   * NDJSON vector feed for downstream vector databases.
+   */
+  async getAIVectorIndex(
+    params: AIVectorIndexParams = {},
+    options: ApiRequestOptions = {}
+  ): Promise<ApiResponse<AIVectorRecord[]>> {
+    const query: Record<string, number> = {}
+    if (params.limit !== undefined) {
+      if (!Number.isFinite(params.limit)) {
+        throw new Error("limit must be a finite number")
+      }
+      query.limit = Number(params.limit)
+    }
+    if (params.offset !== undefined) {
+      if (!Number.isFinite(params.offset)) {
+        throw new Error("offset must be a finite number")
+      }
+      query.offset = Number(params.offset)
+    }
+
+    const headers = new Headers(options.headers)
+    headers.set("Accept", "application/x-ndjson")
+
+    const response = await this.send<string>({
+      method: "GET",
+      path: "/ai/vector-index.ndjson",
+      query,
+      headers,
+      ifNoneMatch: options.ifNoneMatch,
+      ifModifiedSince: options.ifModifiedSince,
+      signal: options.signal,
+    })
+
+    return {
+      ...response,
+      data: parseNdjsonRecords(response.data),
+    }
+  }
+
+  /**
+   * AI license addendum metadata.
+   */
+  async getAILicense(options: ApiRequestOptions = {}): Promise<ApiResponse<AILicenseResponse>> {
+    return this.send<AILicenseResponse>({
+      method: "GET",
+      path: "/license/ai",
+      ifNoneMatch: options.ifNoneMatch,
+      ifModifiedSince: options.ifModifiedSince,
+      headers: options.headers,
       signal: options.signal,
     })
   }
